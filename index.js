@@ -4,16 +4,11 @@ const dotenv = require('dotenv');
 dotenv.config(); // Load environment variables from .env file
 const app = express();
 
-const redirectUri = 'https://discordavatargetter.vercel.app/authorize';
+const redirectUri = 'https://discordavatargetter.vercel.app/authorize'; // Replace with your Vercel app URL
 const scopes = ['identify'];
 
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html'); // Serve the index.html file
-});
-
-app.get('/authorize', async(req, res) => {
-    res.sendFile(__dirname + '/authorize.html'); // Serve the authorize.html file
-});
+// Serve static files from the 'public' directory
+app.use(express.static('public'));
 
 app.get('/getAvatarUrl', async(req, res) => {
     try {
@@ -30,6 +25,6 @@ app.get('/getAvatarUrl', async(req, res) => {
     }
 });
 
-app.listen(8080, () => {
-    console.log('Server is running on port 8080');
+app.listen(process.env.PORT || 8080, () => {
+    console.log('Server is running');
 });
