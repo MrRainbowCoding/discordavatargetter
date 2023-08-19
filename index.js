@@ -4,7 +4,7 @@ const dotenv = require('dotenv');
 dotenv.config(); // Load environment variables from .env file
 const app = express();
 
-const redirectUri = 'https://discordavatargetter.vercel.app/authorize'; // Replace with your Vercel app URL
+const redirectUri = 'https://discordavatargetter.vercel.app/api/authorize'; // Replace with your Vercel app URL
 const scopes = ['identify'];
 
 // Serve static files from the 'public' directory
