@@ -4,70 +4,60 @@ const dotenv = require('dotenv');
 dotenv.config(); // Load environment variables from .env file
 const app = express();
 
-const redirectUri = 'https://discordavatargetter.vercel.app/api/authorize'; // Replace with your Vercel app URL
+const redirectUri = 'https://discordavatargetter.vercel.app/authorize'; // Updated redirect URI
 const scopes = ['identify'];
 
-// Serve static files from the 'public' directory
-app.use(express.static('public'));
+app.get('/', (req, res) => {
+    const authorizeUrl = `https://discord.com/oauth2/authorize?client_id=${process.env.CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${scopes.join('%20')}`;
 
-app.get('/getAvatarUrl', async(req, res) => {
-    try {
-        // Fetch the user's avatar URL based on the authorization code
-        const code = req.query.code;
-        // Rest of your code to fetch the avatar URL
-        // For demonstration purposes, let's assume avatarUrl is a variable containing the URL
-        const avatarUrl = `https://cdn.discordapp.com/avatars/user_id/avatar.png`;
-
-        res.send(avatarUrl);
-    } catch (error) {
-        console.error('Error fetching avatar URL:', error);
-        res.status(500).send('An error occurred while fetching the avatar URL.');
-    }
+    res.redirect(authorizeUrl);
 });
 
-app.get('/api/authorize', async(req, res) => {
+app.get('/authorize', async(req, res) => {
     try {
-        // Retrieve the authorization code from the request query parameters
         const code = req.query.code;
+        const tokenResponse = await axios.post(
+            'https://discord.com/api/oauth2/token',
+            new URLSearchParams({
+                client_id: process.env.CLIENT_ID,
+                client_secret: process.env.CLIENT_SECRET,
+                code,
+                grant_type: 'authorization_code',
+                redirect_uri: redirectUri,
+                scope: scopes.join(' '),
+            }), {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+            });
 
-        // Exchange the authorization code for an access token
-        const params = new URLSearchParams();
-        params.append('client_id', process.env.CLIENT_ID); // Replace with your Discord app's client ID
-        params.append('client_secret', process.env.CLIENT_SECRET); // Replace with your Discord app's client secret
-        params.append('grant_type', 'authorization_code');
-        params.append('code', code);
-        params.append('redirect_uri', redirectUri);
-        params.append('scope', scopes.join(' '));
+        const tokenData = tokenResponse.data;
 
-        const response = await axios.post('https://discord.com/api/v8/oauth2/token', params, {
+        const userResponse = await axios.get('https://discord.com/api/v10/users/@me', {
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                Authorization: `Bearer ${tokenData.access_token}`,
             },
         });
 
-        // Extract the access token from the response
-        const accessToken = response.data.access_token;
+        const userData = userResponse.data;
 
-        // Fetch the user's profile using the access token
-        const profileResponse = await axios.get('https://discord.com/api/v8/users/@me', {
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
-            },
-        });
+        const avatarUrl = `https://cdn.discordapp.com/avatars/${userData.id}/${userData.avatar}.png`;
 
-        // Extract the user's ID from the profile response
-        const userId = profileResponse.data.id;
-
-        // Retrieve the user's avatar URL
-        const avatarUrl = `https://cdn.discordapp.com/avatars/${userId}/${profileResponse.data.avatar}.png`;
-
-        res.send(avatarUrl);
+        // Redirect to /api/authorize endpoint with avatar URL as a query parameter
+        res.redirect(`/api/authorize?avatarUrl=${avatarUrl}`);
     } catch (error) {
-        console.error('Error fetching avatar URL:', error);
-        res.status(500).send('An error occurred while fetching the avatar URL.');
+        console.error('Error:', error);
+        res.send('An error occurred. Please check the console.');
     }
 });
 
-app.listen(process.env.PORT || 8080, () => {
-    console.log('Server is running');
+app.get('/api/authorize', (req, res) => {
+    const avatarUrl = req.query.avatarUrl;
+
+    // Display the avatar URL
+    res.send(`<img src="${avatarUrl}" alt="Discord Avatar">`);
+});
+
+app.listen(3000, () => {
+    console.log('Server is running on port 3000');
 });
