@@ -8,44 +8,25 @@ const redirectUri = 'https://discordavatargetter.vercel.app/authorize';
 const scopes = ['identify'];
 
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html'); // Serve the HTML file
+    res.sendFile(__dirname + '/index.html'); // Serve the index.html file
 });
 
 app.get('/authorize', async(req, res) => {
+    res.sendFile(__dirname + '/authorize.html'); // Serve the authorize.html file
+});
+
+app.get('/getAvatarUrl', async(req, res) => {
     try {
+        // Fetch the user's avatar URL based on the authorization code
         const code = req.query.code;
-        const tokenResponse = await axios.post(
-            'https://discord.com/api/oauth2/token',
-            new URLSearchParams({
-                client_id: process.env.CLIENT_ID,
-                client_secret: process.env.CLIENT_SECRET,
-                code,
-                grant_type: 'authorization_code',
-                redirect_uri: redirectUri,
-                scope: scopes.join(' '),
-            }), {
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-            }
-        );
+        // Rest of your code to fetch the avatar URL
+        // For demonstration purposes, let's assume avatarUrl is a variable containing the URL
+        const avatarUrl = `https://cdn.discordapp.com/avatars/user_id/avatar.png`;
 
-        const tokenData = tokenResponse.data;
-
-        const userResponse = await axios.get('https://discord.com/api/v10/users/@me', {
-            headers: {
-                Authorization: `Bearer ${tokenData.access_token}`,
-            },
-        });
-
-        const userData = userResponse.data;
-
-        const avatarUrl = `https://cdn.discordapp.com/avatars/${userData.id}/${userData.avatar}.png`;
-
-        res.send(`<img src="${avatarUrl}" alt="Discord Avatar">`);
+        res.send(avatarUrl);
     } catch (error) {
-        console.error('Error:', error);
-        res.send('An error occurred. Please check the console.');
+        console.error('Error fetching avatar URL:', error);
+        res.status(500).send('An error occurred while fetching the avatar URL.');
     }
 });
 

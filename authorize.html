@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Authorization Page</title>
+</head>
+
+<body>
+    <h1>Authorization Successful!</h1>
+    <p>Your avatar:</p>
+    <img id="avatarImage" alt="Discord Avatar">
+
+    <script>
+        // Fetch the avatar URL from the server
+        fetch('/getAvatarUrl')
+            .then(response => response.text())
+            .then(avatarUrl => {
+                const avatarImage = document.getElementById('avatarImage');
+                avatarImage.src = avatarUrl;
+            })
+            .catch(error => console.error('Error fetching avatar URL:', error));
+    </script>
+</body>
+
+</html>
