@@ -8,9 +8,7 @@ const redirectUri = 'https://discordavatargetter.vercel.app/authorize';
 const scopes = ['identify'];
 
 app.get('/', (req, res) => {
-    const authorizeUrl = `https://discord.com/api/oauth2/authorize?client_id=${process.env.CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${scopes.join('%20')}`;
-
-    res.redirect(authorizeUrl);
+    res.sendFile(__dirname + '/index.html'); // Serve the HTML file
 });
 
 app.get('/authorize', async(req, res) => {
