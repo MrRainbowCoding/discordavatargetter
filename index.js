@@ -25,7 +25,7 @@ app.get('/getAvatarUrl', async(req, res) => {
     }
 });
 
-app.get('/api/authorize', async(req, res) => {
+app.get('/api/authorize', (req, res) => {
     try {
         // Retrieve the authorization code from the request query parameters
         const code = req.query.code;
@@ -39,7 +39,7 @@ app.get('/api/authorize', async(req, res) => {
         params.append('redirect_uri', redirectUri);
         params.append('scope', scopes.join(' '));
 
-        const response = await axios.post('https://discord.com/api/v8/oauth2/token', params, {
+        const response = axios.post('https://discord.com/api/v8/oauth2/token', params, {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
@@ -49,7 +49,7 @@ app.get('/api/authorize', async(req, res) => {
         const accessToken = response.data.access_token;
 
         // Fetch the user's profile using the access token
-        const profileResponse = await axios.get('https://discord.com/api/v8/users/@me', {
+        const profileResponse = axios.get('https://discord.com/api/v8/users/@me', {
             headers: {
                 Authorization: `Bearer ${accessToken}`
             }
